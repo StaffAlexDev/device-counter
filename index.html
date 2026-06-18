@@ -176,21 +176,17 @@
   .card-reset:active { transform: scale(.9); }
 
   /* Большое редактируемое число */
+  /* Счётчик — только отображение, меняется через JS (кликнуть нельзя) */
   .count-input {
-    width: 100%;
     text-align: center;
     font-size: 52px;
     font-weight: 800;
     line-height: 1;
     color: var(--text);
-    border: none;
-    background: transparent;
     padding: 8px 0 14px;
-    -moz-appearance: textfield;
+    -webkit-user-select: none;
+    user-select: none;
   }
-  .count-input::-webkit-outer-spin-button,
-  .count-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .count-input:focus { outline: none; color: var(--accent); }
 
   .row { display: flex; gap: 10px; }
   .row + .row { margin-top: 10px; }
@@ -349,7 +345,7 @@
           <button class="card-reset" type="button" data-act="reset" data-id="lan_master" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <input class="count-input" id="count_lan_master" type="number" min="0" value="0" inputmode="numeric">
+      <div class="count-input" id="count_lan_master">0</div>
       <div class="row">
         <button class="step step-minus" type="button" data-act="minus" data-id="lan_master">−1</button>
         <button class="step step-plus" type="button" data-act="plus" data-id="lan_master">+1</button>
@@ -368,7 +364,7 @@
           <button class="card-reset" type="button" data-act="reset" data-id="lan_slave" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <input class="count-input" id="count_lan_slave" type="number" min="0" value="0" inputmode="numeric">
+      <div class="count-input" id="count_lan_slave">0</div>
       <div class="row">
         <button class="step step-minus" type="button" data-act="minus" data-id="lan_slave">−1</button>
         <button class="step step-plus" type="button" data-act="plus" data-id="lan_slave">+1</button>
@@ -397,7 +393,7 @@
           <button class="card-reset" type="button" data-act="reset" data-id="wifi_master" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <input class="count-input" id="count_wifi_master" type="number" min="0" value="0" inputmode="numeric">
+      <div class="count-input" id="count_wifi_master">0</div>
       <div class="row">
         <button class="step step-minus" type="button" data-act="minus" data-id="wifi_master">−1</button>
         <button class="step step-plus" type="button" data-act="plus" data-id="wifi_master">+1</button>
@@ -416,7 +412,7 @@
           <button class="card-reset" type="button" data-act="reset" data-id="wifi_slave" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <input class="count-input" id="count_wifi_slave" type="number" min="0" value="0" inputmode="numeric">
+      <div class="count-input" id="count_wifi_slave">0</div>
       <div class="row">
         <button class="step step-minus" type="button" data-act="minus" data-id="wifi_slave">−1</button>
         <button class="step step-plus" type="button" data-act="plus" data-id="wifi_slave">+1</button>
@@ -490,8 +486,8 @@
       total += c;
       if (p.group === 'LAN') { lan += c; } else { wifi += c; }
 
-      var inp = byId('count_' + p.id);
-      if (inp && document.activeElement !== inp) { inp.value = c; }
+      var el = byId('count_' + p.id);
+      if (el) { el.textContent = c; }
 
       var sumEl = byId('sum_' + p.id);
       if (sumEl) { sumEl.textContent = c; }
@@ -547,19 +543,6 @@
       var g = btn.getAttribute('data-group');
       counts[g + '_master'] = (counts[g + '_master'] || 0) + 1;
       counts[g + '_slave']  = (counts[g + '_slave']  || 0) + 1;
-      save();
-      render();
-    }
-  }, false);
-
-  /* Прямое редактирование большого числа */
-  document.addEventListener('input', function (e) {
-    var t = e.target || e.srcElement;
-    if (hasClass(t, 'count-input')) {
-      var id = t.id.replace('count_', '');
-      var v = parseInt(t.value, 10);
-      if (isNaN(v) || v < 0) { v = 0; }
-      counts[id] = v;
       save();
       render();
     }
