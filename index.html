@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Счётчик устройств</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --lan: #2563eb;
+    --lan-soft: #eff4ff;
+    --wifi: #0d9488;
+    --wifi-soft: #e9f7f5;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.05);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    padding: 24px 16px 64px;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  .noscript-warn {
+    max-width: 880px;
+    margin: 0 auto 16px;
+    background: var(--danger-soft);
+    border: 1px solid #fecaca;
+    color: var(--danger);
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  header.top h1 { font-size: 22px; margin: 0; font-weight: 700; }
+  header.top p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .04s ease, background .15s ease, box-shadow .15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-reset {
+    color: var(--danger);
+    background: var(--danger-soft);
+    border-color: #fecaca;
+  }
+  .btn-reset:hover { background: #fde8e8; }
+
+  /* Группа (LAN / Wi-Fi) */
+  .group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 4px 12px;
+  }
+  .group-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--accent);
+  }
+  .card.lan { --accent: var(--lan); --accent-soft: var(--lan-soft); }
+  .card.wifi { --accent: var(--wifi); --accent-soft: var(--wifi-soft); }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .card-name { font-size: 17px; font-weight: 700; }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .card-head-right { display: flex; align-items: center; gap: 8px; }
+  .card-reset {
+    border: 1px solid #fecaca;
+    background: var(--danger-soft);
+    color: var(--danger);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s ease;
+  }
+  .card-reset:hover { color: #fff; border-color: var(--danger); background: var(--danger); }
+  .card-reset:active { transform: scale(.9); }
+
+  /* Большое редактируемое число */
+  .count-input {
+    width: 100%;
+    text-align: center;
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+    border: none;
+    background: transparent;
+    padding: 8px 0 14px;
+    -moz-appearance: textfield;
+  }
+  .count-input::-webkit-outer-spin-button,
+  .count-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .count-input:focus { outline: none; color: var(--accent); }
+
+  .row { display: flex; gap: 10px; }
+  .row + .row { margin-top: 10px; }
+
+  .step {
+    border: none;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .04s ease, filter .15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .step:active { transform: scale(.96); }
+  .step-plus {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    font-size: 22px;
+    padding: 14px;
+  }
+  .step-plus:hover { filter: brightness(1.05); }
+  .step-minus {
+    width: 60px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 22px;
+  }
+
+  .qty {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 16px;
+    min-width: 0;
+    -moz-appearance: textfield;
+  }
+  .qty::-webkit-outer-spin-button,
+  .qty::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .qty:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+  .qty::placeholder { color: #9ca3af; }
+  .add {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .add:active { transform: scale(.97); }
+
+  /* Итоги */
+  .summary {
+    margin-top: 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 18px 8px;
+    box-shadow: var(--shadow);
+  }
+  .summary h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 14px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .stat {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: left;
+    border-left: 3px solid var(--border);
+  }
+  .stat.lan { border-left-color: var(--lan); }
+  .stat.wifi { border-left-color: var(--wifi); }
+  .stat .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  .stat .value { font-size: 28px; font-weight: 800; }
+  .subtotals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .subtotal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--border);
+  }
+  .subtotal.lan { border-left-color: var(--lan); }
+  .subtotal.wifi { border-left-color: var(--wifi); }
+  .subtotal .sub-label { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .subtotal .sub-value { font-size: 24px; font-weight: 800; }
+
+  .total {
+    margin-top: 14px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .total .label { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .total .value { font-size: 40px; font-weight: 900; }
+
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .count-input { font-size: 46px; }
+  }
+</style>
+</head>
+<body>
+
+<noscript>
+  <div class="noscript-warn">
+    Счётчик не работает, потому что отключён JavaScript или файл открыт в режиме предпросмотра.
+    Откройте файл в браузере <b>Safari</b> (не во встроенном просмотрщике «Файлов»/почты),
+    а если кнопки всё равно не нажимаются — включите JavaScript:
+    Настройки → Safari → Дополнения → JavaScript.
+  </div>
+</noscript>
+
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Счётчик устройств</h1>
+      <p>Нажимай «+1» поштучно или впиши количество и нажми «Добавить»</p>
+    </div>
+    <button class="btn btn-reset" type="button" id="resetBtn">Сбросить всё</button>
+  </header>
+
+  <!-- ===== LAN ===== -->
+  <div class="group-title">LAN</div>
+  <div class="grid">
+
+    <div class="card lan">
+      <div class="card-head">
+        <span class="card-name">Мастер</span>
+        <div class="card-head-right">
+          <span class="badge">LAN</span>
+          <button class="card-reset" type="button" data-act="reset" data-id="lan_master" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
+        </div>
+      </div>
+      <input class="count-input" id="count_lan_master" type="number" min="0" value="0" inputmode="numeric">
+      <div class="row">
+        <button class="step step-minus" type="button" data-act="minus" data-id="lan_master">−1</button>
+        <button class="step step-plus" type="button" data-act="plus" data-id="lan_master">+1</button>
+      </div>
+      <div class="row">
+        <input class="qty" id="qty_lan_master" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
+        <button class="add" type="button" data-act="add" data-id="lan_master">Добавить</button>
+      </div>
+    </div>
+
+    <div class="card lan">
+      <div class="card-head">
+        <span class="card-name">Слейв</span>
+        <div class="card-head-right">
+          <span class="badge">LAN</span>
+          <button class="card-reset" type="button" data-act="reset" data-id="lan_slave" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
+        </div>
+      </div>
+      <input class="count-input" id="count_lan_slave" type="number" min="0" value="0" inputmode="numeric">
+      <div class="row">
+        <button class="step step-minus" type="button" data-act="minus" data-id="lan_slave">−1</button>
+        <button class="step step-plus" type="button" data-act="plus" data-id="lan_slave">+1</button>
+      </div>
+      <div class="row">
+        <input class="qty" id="qty_lan_slave" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
+        <button class="add" type="button" data-act="add" data-id="lan_slave">Добавить</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== Wi-Fi ===== -->
+  <div class="group-title">Wi-Fi</div>
+  <div class="grid">
+
+    <div class="card wifi">
+      <div class="card-head">
+        <span class="card-name">Мастер</span>
+        <div class="card-head-right">
+          <span class="badge">Wi-Fi</span>
+          <button class="card-reset" type="button" data-act="reset" data-id="wifi_master" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
+        </div>
+      </div>
+      <input class="count-input" id="count_wifi_master" type="number" min="0" value="0" inputmode="numeric">
+      <div class="row">
+        <button class="step step-minus" type="button" data-act="minus" data-id="wifi_master">−1</button>
+        <button class="step step-plus" type="button" data-act="plus" data-id="wifi_master">+1</button>
+      </div>
+      <div class="row">
+        <input class="qty" id="qty_wifi_master" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
+        <button class="add" type="button" data-act="add" data-id="wifi_master">Добавить</button>
+      </div>
+    </div>
+
+    <div class="card wifi">
+      <div class="card-head">
+        <span class="card-name">Слейв</span>
+        <div class="card-head-right">
+          <span class="badge">Wi-Fi</span>
+          <button class="card-reset" type="button" data-act="reset" data-id="wifi_slave" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
+        </div>
+      </div>
+      <input class="count-input" id="count_wifi_slave" type="number" min="0" value="0" inputmode="numeric">
+      <div class="row">
+        <button class="step step-minus" type="button" data-act="minus" data-id="wifi_slave">−1</button>
+        <button class="step step-plus" type="button" data-act="plus" data-id="wifi_slave">+1</button>
+      </div>
+      <div class="row">
+        <input class="qty" id="qty_wifi_slave" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
+        <button class="add" type="button" data-act="add" data-id="wifi_slave">Добавить</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== Итоги ===== -->
+  <section class="summary">
+    <h2>Итоги — каждое устройство отдельно</h2>
+    <div class="stats">
+      <div class="stat lan"><div class="stat-label">LAN · Мастер</div><div class="value" id="sum_lan_master">0</div></div>
+      <div class="stat lan"><div class="stat-label">LAN · Слейв</div><div class="value" id="sum_lan_slave">0</div></div>
+      <div class="stat wifi"><div class="stat-label">Wi-Fi · Мастер</div><div class="value" id="sum_wifi_master">0</div></div>
+      <div class="stat wifi"><div class="stat-label">Wi-Fi · Слейв</div><div class="value" id="sum_wifi_slave">0</div></div>
+    </div>
+    <div class="subtotals">
+      <div class="subtotal lan"><span class="sub-label">Всего LAN</span><span class="sub-value" id="sumLan">0</span></div>
+      <div class="subtotal wifi"><span class="sub-label">Всего Wi-Fi</span><span class="sub-value" id="sumWifi">0</span></div>
+    </div>
+    <div class="total">
+      <span class="label">Итого устройств:</span>
+      <span class="value" id="sumTotal">0</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* Совместимый со старыми Safari код (без современного синтаксиса) */
+(function () {
+  "use strict";
+
+  var POSITIONS = [
+    { id: 'lan_master',  group: 'LAN' },
+    { id: 'lan_slave',   group: 'LAN' },
+    { id: 'wifi_master', group: 'Wi-Fi' },
+    { id: 'wifi_slave',  group: 'Wi-Fi' }
+  ];
+  var STORAGE_KEY = 'device_counter_v1';
+  var counts = {};
+  var i;
+
+  /* Загрузка сохранённого (чтобы цифры не пропали при случайном обновлении) */
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved && typeof saved === 'object') { counts = saved; }
+  } catch (e) {}
+
+  for (i = 0; i < POSITIONS.length; i++) {
+    var pid = POSITIONS[i].id;
+    if (typeof counts[pid] !== 'number' || isNaN(counts[pid])) { counts[pid] = 0; }
+  }
+
+  function byId(id) { return document.getElementById(id); }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(counts)); } catch (e) {}
+  }
+
+  function render() {
+    var total = 0, lan = 0, wifi = 0;
+    for (var j = 0; j < POSITIONS.length; j++) {
+      var p = POSITIONS[j];
+      var c = counts[p.id];
+      total += c;
+      if (p.group === 'LAN') { lan += c; } else { wifi += c; }
+
+      var inp = byId('count_' + p.id);
+      if (inp && document.activeElement !== inp) { inp.value = c; }
+
+      var sumEl = byId('sum_' + p.id);
+      if (sumEl) { sumEl.textContent = c; }
+    }
+    var lanEl = byId('sumLan'); if (lanEl) { lanEl.textContent = lan; }
+    var wifiEl = byId('sumWifi'); if (wifiEl) { wifiEl.textContent = wifi; }
+    var totEl = byId('sumTotal'); if (totEl) { totEl.textContent = total; }
+  }
+
+  function setCount(id, value) {
+    var v = parseInt(value, 10);
+    if (isNaN(v) || v < 0) { v = 0; }
+    counts[id] = v;
+    save();
+    render();
+  }
+
+  function add(id, delta) {
+    setCount(id, (counts[id] || 0) + delta);
+  }
+
+  /* Ищем ближайшую кнопку с data-act (замена .closest для старых браузеров) */
+  function findAction(node) {
+    while (node && node.nodeType === 1) {
+      if (node.getAttribute && node.getAttribute('data-act')) { return node; }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function hasClass(el, cls) {
+    return el && typeof el.className === 'string' &&
+      (' ' + el.className + ' ').indexOf(' ' + cls + ' ') !== -1;
+  }
+
+  /* Клики: +1 / −1 / Добавить / сброс позиции */
+  document.addEventListener('click', function (e) {
+    var btn = findAction(e.target || e.srcElement);
+    if (!btn) { return; }
+    var act = btn.getAttribute('data-act');
+    var id = btn.getAttribute('data-id');
+    if (act === 'plus') { add(id, 1); }
+    else if (act === 'minus') { add(id, -1); }
+    else if (act === 'reset') { setCount(id, 0); }
+    else if (act === 'add') {
+      var qtyEl = byId('qty_' + id);
+      var n = parseInt(qtyEl.value, 10);
+      if (!isNaN(n) && n !== 0) { add(id, n); }
+      qtyEl.value = '';
+      qtyEl.focus();
+    }
+  }, false);
+
+  /* Прямое редактирование большого числа */
+  document.addEventListener('input', function (e) {
+    var t = e.target || e.srcElement;
+    if (hasClass(t, 'count-input')) {
+      var id = t.id.replace('count_', '');
+      var v = parseInt(t.value, 10);
+      if (isNaN(v) || v < 0) { v = 0; }
+      counts[id] = v;
+      save();
+      render();
+    }
+  }, false);
+
+  /* Enter в поле «кол-во» = Добавить */
+  document.addEventListener('keydown', function (e) {
+    var t = e.target || e.srcElement;
+    var isEnter = (e.key === 'Enter' || e.keyCode === 13);
+    if (isEnter && hasClass(t, 'qty')) {
+      if (e.preventDefault) { e.preventDefault(); }
+      var id = t.id.replace('qty_', '');
+      var n = parseInt(t.value, 10);
+      if (!isNaN(n) && n !== 0) { add(id, n); }
+      t.value = '';
+    }
+  }, false);
+
+  /* Общий сброс (с подтверждением) */
+  var resetBtn = byId('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      if (!window.confirm('Обнулить все счётчики? Это действие нельзя отменить.')) { return; }
+      for (var k = 0; k < POSITIONS.length; k++) { counts[POSITIONS[k].id] = 0; }
+      save();
+      render();
+    }, false);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
