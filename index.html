@@ -96,6 +96,33 @@
     background: var(--border);
   }
 
+  /* Большая кнопка «Комплект» над блоком */
+  .kit-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 14px;
+    flex-wrap: wrap;
+    border: none;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #fff;
+    padding: 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .04s ease, filter .15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .kit-btn.lan { --accent: var(--lan); }
+  .kit-btn.wifi { --accent: var(--wifi); }
+  .kit-btn:hover { filter: brightness(1.06); }
+  .kit-btn:active { transform: scale(.985); }
+  .kit-main { font-size: 18px; font-weight: 800; }
+  .kit-sub { font-size: 13px; font-weight: 600; opacity: .9; }
+
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -308,6 +335,10 @@
 
   <!-- ===== LAN ===== -->
   <div class="group-title">LAN</div>
+  <button class="kit-btn lan" type="button" data-act="kit" data-group="lan">
+    <span class="kit-main">+ Комплект LAN</span>
+    <span class="kit-sub">+1 Мастер · +1 Слейв</span>
+  </button>
   <div class="grid">
 
     <div class="card lan">
@@ -352,6 +383,10 @@
 
   <!-- ===== Wi-Fi ===== -->
   <div class="group-title">Wi-Fi</div>
+  <button class="kit-btn wifi" type="button" data-act="kit" data-group="wifi">
+    <span class="kit-main">+ Комплект Wi-Fi</span>
+    <span class="kit-sub">+1 Мастер · +1 Слейв</span>
+  </button>
   <div class="grid">
 
     <div class="card wifi">
@@ -507,6 +542,13 @@
       if (!isNaN(n) && n !== 0) { add(id, n); }
       qtyEl.value = '';
       qtyEl.focus();
+    }
+    else if (act === 'kit') {
+      var g = btn.getAttribute('data-group');
+      counts[g + '_master'] = (counts[g + '_master'] || 0) + 1;
+      counts[g + '_slave']  = (counts[g + '_slave']  || 0) + 1;
+      save();
+      render();
     }
   }, false);
 
