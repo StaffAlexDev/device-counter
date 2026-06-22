@@ -172,8 +172,19 @@
     justify-content: center;
     transition: all .15s ease;
   }
-  .card-reset:hover { color: #fff; border-color: var(--danger); background: var(--danger); }
+  /* Красный фон — только там, где есть настоящий курсор (мышь).
+     На тач-экране :hover «залипал» после тапа — поэтому исключаем его. */
+  @media (hover: hover) {
+    .card-reset:hover { color: #fff; border-color: var(--danger); background: var(--danger); }
+  }
   .card-reset:active { transform: scale(.9); }
+  /* При нажатии кнопка плавно «моргает» красным и возвращается в обычный цвет */
+  @keyframes resetFlash {
+    0%   { background: var(--danger-soft); border-color: #fecaca;      color: var(--danger); }
+    35%  { background: var(--danger);      border-color: var(--danger); color: #fff; }
+    100% { background: var(--danger-soft); border-color: #fecaca;      color: var(--danger); }
+  }
+  .card-reset.flash { animation: resetFlash .4s ease; }
 
   /* Большое редактируемое число */
   /* На десктопе — только отображение; на мобиле тап по числу = +1 (см. медиазапрос ниже) */
@@ -367,7 +378,7 @@
 
     /* Большое число — теперь это ещё и кнопка +1 (тап по числу прибавляет) */
     .count-input {
-      font-size: 34px;
+      font-size: 38px;
       padding: 8px 0;
       margin: 2px 0 6px;
       border-radius: 10px;
@@ -388,7 +399,7 @@
     .count-input:active { transform: scale(.97); filter: brightness(.96); }
 
     /* −1 и число-«кнопка» в одну строку: слева −1, справа счётчик */
-    .counter-row { display: flex; align-items: stretch; gap: 8px; margin: 2px 0 8px; }
+    .counter-row { display: flex; align-items: stretch; gap: 8px; margin: 2px 0 8px; min-height: 88px; }
     .counter-row .count-input { order: 2; flex: 1; margin: 0; display: flex; align-items: center; justify-content: center; }
     .counter-row .row { order: 1; flex: 0 0 64px; margin-top: 0; }
     .counter-row + .row { margin-top: 0; }
@@ -403,7 +414,7 @@
       width: auto;
       flex: 1;
       padding: 14px;
-      font-size: 20px;
+      font-size: 22px;
       border: 1.5px solid var(--accent);
     }
     .qty { padding: 0 10px; font-size: 15px; }
@@ -631,6 +642,14 @@
     return w <= 620;
   }
 
+  /* Кратковременная «моргалка» кнопки сброса позиции (перезапуск CSS-анимации) */
+  function flashReset(el) {
+    if (!el) { return; }
+    el.className = 'card-reset';
+    void el.offsetWidth;            /* форсируем reflow, чтобы анимация пошла заново */
+    el.className = 'card-reset flash';
+  }
+
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(counts)); } catch (e) {}
   }
@@ -689,7 +708,7 @@
     if (act === 'plus') { add(id, 1); }
     else if (act === 'minus') { add(id, -1); }
     else if (act === 'tapplus') { if (isMobile()) { add(id, 1); } }
-    else if (act === 'reset') { setCount(id, 0); }
+    else if (act === 'reset') { setCount(id, 0); flashReset(btn); }
     else if (act === 'add') {
       var qtyEl = byId('qty_' + id);
       var n = parseInt(qtyEl.value, 10);
