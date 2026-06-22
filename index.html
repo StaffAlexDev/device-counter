@@ -190,6 +190,10 @@
 
   .row { display: flex; gap: 10px; }
   .row + .row { margin-top: 10px; }
+  /* На мобиле число и −1 объединяются в .counter-row (см. медиазапрос).
+     На десктопе .counter-row — обычный блок, эта строка возвращает прежний
+     отступ перед строкой «кол-во / Добавить». */
+  .counter-row + .row { margin-top: 10px; }
 
   .step {
     border: none;
@@ -383,6 +387,12 @@
     }
     .count-input:active { transform: scale(.97); filter: brightness(.96); }
 
+    /* −1 и число-«кнопка» в одну строку: слева −1, справа счётчик */
+    .counter-row { display: flex; align-items: stretch; gap: 8px; margin: 2px 0 8px; }
+    .counter-row .count-input { order: 2; flex: 1; margin: 0; display: flex; align-items: center; justify-content: center; }
+    .counter-row .row { order: 1; flex: 0 0 64px; margin-top: 0; }
+    .counter-row + .row { margin-top: 0; }
+
     /* Кнопки шага. На мобиле +1 не нужна — её роль выполняет тап по числу.
        Прячем +1, а −1 растягиваем на всю ширину и держим прежнюю высоту,
        чтобы карточка не «сжалась». */
@@ -472,10 +482,12 @@
           <button class="card-reset" type="button" data-act="reset" data-id="lan_master" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <div class="count-input" id="count_lan_master" data-act="tapplus" data-id="lan_master" role="button" aria-label="Прибавить 1">0</div>
-      <div class="row">
-        <button class="step step-minus" type="button" data-act="minus" data-id="lan_master">−1</button>
-        <button class="step step-plus" type="button" data-act="plus" data-id="lan_master">+1</button>
+      <div class="counter-row">
+        <div class="count-input" id="count_lan_master" data-act="tapplus" data-id="lan_master" role="button" aria-label="Прибавить 1">0</div>
+        <div class="row">
+          <button class="step step-minus" type="button" data-act="minus" data-id="lan_master">−1</button>
+          <button class="step step-plus" type="button" data-act="plus" data-id="lan_master">+1</button>
+        </div>
       </div>
       <div class="row">
         <input class="qty" id="qty_lan_master" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
@@ -491,10 +503,12 @@
           <button class="card-reset" type="button" data-act="reset" data-id="lan_slave" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <div class="count-input" id="count_lan_slave" data-act="tapplus" data-id="lan_slave" role="button" aria-label="Прибавить 1">0</div>
-      <div class="row">
-        <button class="step step-minus" type="button" data-act="minus" data-id="lan_slave">−1</button>
-        <button class="step step-plus" type="button" data-act="plus" data-id="lan_slave">+1</button>
+      <div class="counter-row">
+        <div class="count-input" id="count_lan_slave" data-act="tapplus" data-id="lan_slave" role="button" aria-label="Прибавить 1">0</div>
+        <div class="row">
+          <button class="step step-minus" type="button" data-act="minus" data-id="lan_slave">−1</button>
+          <button class="step step-plus" type="button" data-act="plus" data-id="lan_slave">+1</button>
+        </div>
       </div>
       <div class="row">
         <input class="qty" id="qty_lan_slave" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
@@ -520,10 +534,12 @@
           <button class="card-reset" type="button" data-act="reset" data-id="wifi_master" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <div class="count-input" id="count_wifi_master" data-act="tapplus" data-id="wifi_master" role="button" aria-label="Прибавить 1">0</div>
-      <div class="row">
-        <button class="step step-minus" type="button" data-act="minus" data-id="wifi_master">−1</button>
-        <button class="step step-plus" type="button" data-act="plus" data-id="wifi_master">+1</button>
+      <div class="counter-row">
+        <div class="count-input" id="count_wifi_master" data-act="tapplus" data-id="wifi_master" role="button" aria-label="Прибавить 1">0</div>
+        <div class="row">
+          <button class="step step-minus" type="button" data-act="minus" data-id="wifi_master">−1</button>
+          <button class="step step-plus" type="button" data-act="plus" data-id="wifi_master">+1</button>
+        </div>
       </div>
       <div class="row">
         <input class="qty" id="qty_wifi_master" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
@@ -539,10 +555,12 @@
           <button class="card-reset" type="button" data-act="reset" data-id="wifi_slave" title="Обнулить эту позицию" aria-label="Обнулить эту позицию">↺</button>
         </div>
       </div>
-      <div class="count-input" id="count_wifi_slave" data-act="tapplus" data-id="wifi_slave" role="button" aria-label="Прибавить 1">0</div>
-      <div class="row">
-        <button class="step step-minus" type="button" data-act="minus" data-id="wifi_slave">−1</button>
-        <button class="step step-plus" type="button" data-act="plus" data-id="wifi_slave">+1</button>
+      <div class="counter-row">
+        <div class="count-input" id="count_wifi_slave" data-act="tapplus" data-id="wifi_slave" role="button" aria-label="Прибавить 1">0</div>
+        <div class="row">
+          <button class="step step-minus" type="button" data-act="minus" data-id="wifi_slave">−1</button>
+          <button class="step step-plus" type="button" data-act="plus" data-id="wifi_slave">+1</button>
+        </div>
       </div>
       <div class="row">
         <input class="qty" id="qty_wifi_slave" type="number" min="1" placeholder="кол-во из заказа" inputmode="numeric">
