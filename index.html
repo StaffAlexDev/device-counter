@@ -368,8 +368,10 @@
     /* Карточки — сетка 2×2, плотнее.
        min-width:0 обязателен: иначе поле ввода тянет колонку на свою «родную»
        ширину (~200px) и сетка вылезает за экран. */
-    .grid { grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
-    .card { padding: 10px; border-radius: 12px; border-top-width: 3px; min-width: 0; }
+    .grid { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; gap: 8px; min-width: 0;
+            flex: 1 1 0; min-height: 0; }
+    .card { padding: 10px; border-radius: 12px; border-top-width: 3px; min-width: 0;
+            display: flex; flex-direction: column; }
     .card .row { min-width: 0; }
     .card-head { margin-bottom: 4px; }
     .card-name { font-size: 14px; }
@@ -378,7 +380,7 @@
 
     /* Большое число — теперь это ещё и кнопка +1 (тап по числу прибавляет) */
     .count-input {
-      font-size: 38px;
+      font-size: 44px;
       padding: 8px 0;
       margin: 2px 0 6px;
       border-radius: 10px;
@@ -399,7 +401,7 @@
     .count-input:active { transform: scale(.97); filter: brightness(.96); }
 
     /* −1 и число-«кнопка» в одну строку: слева −1, справа счётчик */
-    .counter-row { display: flex; align-items: stretch; gap: 8px; margin: 2px 0 8px; min-height: 88px; }
+    .counter-row { display: flex; align-items: stretch; gap: 8px; margin: 2px 0 8px; min-height: 88px; flex: 1 1 auto; }
     .counter-row .count-input { order: 2; flex: 1; margin: 0; display: flex; align-items: center; justify-content: center; }
     .counter-row .row { order: 1; flex: 0 0 64px; margin-top: 0; }
     .counter-row + .row { margin-top: 0; }
